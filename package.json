@@ -1,6 +1,6 @@
 {
   "name": "@tonyhallett/github-actions",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Module for multiple github actions",
   "main": "lib/index.js",
   "files":["lib"],
@@ -15,8 +15,8 @@
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
     "all": "npm run format && npm run lint && npm test",
-    "publish": "npm publish --access public",
-    "prepublish": "npm run build"
+    "npmpublish": "npm publish --access public",
+    "prenpmpublish": "npm run build"
   },
   "dependencies": {
     "@actions/core": "^1.2.6",
