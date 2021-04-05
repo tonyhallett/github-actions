@@ -25,7 +25,7 @@ export async function workflowArtifactsPullRequestCommentAction(): Promise<void>
             issueNumbers.push(pullRequest.number)
           }
           if (addTo === 'issues' || addTo === 'pullandissues') {
-            setInput('pullRequest', JSON.stringify(pullRequest))
+            setInput('pullRequest', JSON.stringify({pull_request: pullRequest}))
             issueNumbers = issueNumbers.concat(
               await getPullRequestIssuesActionWorker()
             )
