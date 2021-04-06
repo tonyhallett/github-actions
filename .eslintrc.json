@@ -1,5 +1,7 @@
 {
-    "plugins": ["jest", "@typescript-eslint","eslint-plugin-prettier"],
+    "root":true,
+    "plugins": ["jest", "@typescript-eslint"],
+    "extends": ["plugin:github/recommended"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "ecmaVersion": 9,
@@ -7,12 +9,6 @@
       "project": "./tsconfig.json"
     },
     "rules": {
-      "prettier/prettier": [
-        "error",
-        {
-          "endOfLine": "auto"
-        }
-      ],
       "eslint-comments/no-use": "off",
       "import/no-namespace": "off",
       "no-unused-vars": "off",

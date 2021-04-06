@@ -1,3 +1,3 @@
-export * from './getWorkflowArtifactDetails';
-export * from './getWorkflowArtifactsComment';
-export * from './workflowArtifactsPullRequestCommentAction';
+export * from './getWorkflowArtifactDetails'
+export * from './getWorkflowArtifactsComment'
+export * from './workflowArtifactsPullRequestCommentAction'

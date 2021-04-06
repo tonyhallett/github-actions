@@ -216,7 +216,7 @@ describe('workflowArtifactsPullRequestCommentAction', () => {
         await workflowArtifactsPullRequestCommentAction()
         expect(setInput).toHaveBeenCalledWith(
           'pullRequest',
-          JSON.stringify({pull_request:definedPullRequest})
+          JSON.stringify({pull_request: definedPullRequest})
         )
       })
     })

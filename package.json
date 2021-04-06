@@ -3,10 +3,15 @@
   "version": "1.0.3",
   "description": "Module for multiple github actions",
   "main": "lib/index.js",
-  "files":["lib"],
-  "keywords":["github","actions"],
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "github",
+    "actions"
+  ],
   "homepage": "https://github.com/tonyhallett/github-actions#readme",
-  "bugs":"https://github.com/tonyhallett/github-actions/issues",
+  "bugs": "https://github.com/tonyhallett/github-actions/issues",
   "repository": "github:tonyhallett/github-actions",
   "scripts": {
     "build": "tsc",
@@ -30,7 +35,7 @@
     "@typescript-eslint/parser": "^4.17.0",
     "eslint": "^7.17.0",
     "eslint-plugin-jest": "^24.1.10",
-    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-github": "^4.1.2",
     "jest": "^26.6.3",
     "prettier": "2.2.1",
     "ts-jest": "^26.5.3",
