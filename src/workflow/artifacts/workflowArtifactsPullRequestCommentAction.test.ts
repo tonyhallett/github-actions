@@ -1,8 +1,11 @@
 import {setFailed, setOutput} from '@actions/core'
-import { getPullRequestIssuesActionWorker } from '../../getPullRequestIssues/getPullRequestIssuesActionWorker'
+import {getPullRequestIssuesActionWorker} from '../../getPullRequestIssues/getPullRequestIssuesActionWorker'
 import {useOctokit} from '../../helpers'
 import {getBoolInput, setInput} from '../../helpers/inputHelpers'
-import {pullStateInputName, workflowGetPullRequest} from '../workflowGetPullRequest'
+import {
+  pullStateInputName,
+  workflowGetPullRequest
+} from '../workflowGetPullRequest'
 import {workflowArtifactsPullRequestCommentAction} from './workflowArtifactsPullRequestCommentAction'
 let mockWorkflowArtifactsComment: string | undefined
 let mockThrow = false
@@ -100,11 +103,11 @@ describe('specific call order helper', () => {
       const otherMock = jest.fn()
       mock(1)
       otherMock()
-      mock(2,'a')
-      mock(3,'a')
-      const firstCallOrder = getSpecificMockCallOrder(mock,[1])
-      expect(getSpecificMockCallOrder(mock,[2,'a']) - firstCallOrder).toBe(2)
-      expect(getSpecificMockCallOrder(mock,[3,'a']) - firstCallOrder).toBe(3)
+      mock(2, 'a')
+      mock(3, 'a')
+      const firstCallOrder = getSpecificMockCallOrder(mock, [1])
+      expect(getSpecificMockCallOrder(mock, [2, 'a']) - firstCallOrder).toBe(2)
+      expect(getSpecificMockCallOrder(mock, [3, 'a']) - firstCallOrder).toBe(3)
     })
   })
   describe('specificCalledBefore', () => {
@@ -115,7 +118,7 @@ describe('specific call order helper', () => {
       after()
       after()
       before(0)
-      expect(specificCalledBefore(before,[1],after)).toBe(true)
+      expect(specificCalledBefore(before, [1], after)).toBe(true)
     })
 
     it('should return false when called after', () => {
@@ -125,37 +128,41 @@ describe('specific call order helper', () => {
       after()
       after()
       before(0)
-      expect(specificCalledBefore(before,[0],after)).toBe(false)
+      expect(specificCalledBefore(before, [0], after)).toBe(false)
     })
   })
 })
-function getSpecificMockCallOrder(fn:Function,args:any[]){
+function getSpecificMockCallOrder(fn: Function, args: any[]) {
   const mock = fn as jest.Mock
   const calls = mock.mock.calls
   const callNumber = calls.findIndex(beforeCall => {
     let counter = 0
-    for(const arg of args){
-      if(beforeCall[counter] !== arg){
+    for (const arg of args) {
+      if (beforeCall[counter] !== arg) {
         return false
       }
       counter++
     }
     return true
   })
-  if(callNumber === -1){
+  if (callNumber === -1) {
     throw new Error('before not called')
   }
   return mock.mock.invocationCallOrder[callNumber]
 }
 
-function specificCalledBefore(before:Function,args:any[],after:Function): boolean{
+function specificCalledBefore(
+  before: Function,
+  args: any[],
+  after: Function
+): boolean {
   let specificCalledBefore = true
 
   const afterMock = after as jest.Mock
   const afterInvocationCallOrder = afterMock.mock.invocationCallOrder
-  
+
   const beforeCallOrder = getSpecificMockCallOrder(before, args)
-  for(const afterCallOrder of afterInvocationCallOrder){
+  for (const afterCallOrder of afterInvocationCallOrder) {
     if (afterCallOrder <= beforeCallOrder) {
       specificCalledBefore = false
       break
@@ -179,12 +186,6 @@ describe('workflowArtifactsPullRequestCommentAction', () => {
     await workflowArtifactsPullRequestCommentAction()
     expect(setFailed).toHaveBeenCalledWith(mockError)
   })
-  it('should set pullState input to open pull requests for workflowGetPullRequest', async () => {
-    await workflowArtifactsPullRequestCommentAction()
-    expect(specificCalledBefore(setInput,[pullStateInputName, 'open'],workflowGetPullRequest))
-  })
-  
-
 
   it('should setFailed if no pull request', async () => {
     mockPullRequest = undefined
@@ -291,7 +292,13 @@ describe('workflowArtifactsPullRequestCommentAction', () => {
       it('should set the pullRequest input to be used by getPullRequestIssuesActionWorker', async () => {
         mockAddTo = addToIssuesInput
         await workflowArtifactsPullRequestCommentAction()
-        expect(specificCalledBefore(setInput,['pullRequest',JSON.stringify({pull_request: definedPullRequest})],getPullRequestIssuesActionWorker)).toBe(true)
+        expect(
+          specificCalledBefore(
+            setInput,
+            ['pullRequest', JSON.stringify({pull_request: definedPullRequest})],
+            getPullRequestIssuesActionWorker
+          )
+        ).toBe(true)
         /* expect(setInput).toHaveBeenCalledWith(
           'pullRequest',
           JSON.stringify({pull_request: definedPullRequest})

@@ -48,31 +48,31 @@ export async function getPullRequestIssues(
     new ConditionalIssuesProvider(
       pullTitleProviderName,
       usePullTitle,
-      async (pullRequest, closeWords, caseSensitive) =>
-        getIssuesFromHash(pullRequest.title, closeWords, caseSensitive)
+      async (pullRequest, _closeWords, _caseSensitive) =>
+        getIssuesFromHash(pullRequest.title, _closeWords, _caseSensitive)
     ),
     new ConditionalIssuesProvider(
       pullBodyProviderName,
       usePullBody,
-      async (pullRequest, closeWords, caseSensitive) =>
-        getIssuesFromHash(pullRequest.body, closeWords, caseSensitive)
+      async (pullRequest, _closeWords, _caseSensitive) =>
+        getIssuesFromHash(pullRequest.body, _closeWords, _caseSensitive)
     ),
     new ConditionalIssuesProvider(
       branchProviderName,
       useBranch,
-      async (pullRequest, closeWords, caseSensitive) =>
+      async (pullRequest, _closeWords, _caseSensitive) =>
         getIssuesFromBranch(
           pullRequest.head.ref,
-          closeWords,
+          _closeWords,
           branchIssueWords,
           branchDelimiters,
-          caseSensitive
+          _caseSensitive
         )
     ),
     new ConditionalIssuesProvider(
       commitMessagesProviderName,
       useCommitMessages,
-      async (pullRequest, closeWords, caseSensitive) => {
+      async (pullRequest, _closeWords, _caseSensitive) => {
         return useOctokit(async octokit => {
           let issues: number[] = []
           /*
@@ -95,8 +95,8 @@ export async function getPullRequestIssues(
           for (const commitData of commitsData) {
             const issuesFromHash = getIssuesFromHash(
               commitData.commit.message,
-              closeWords,
-              caseSensitive
+              _closeWords,
+              _caseSensitive
             )
             issues = issues.concat(issuesFromHash)
           }

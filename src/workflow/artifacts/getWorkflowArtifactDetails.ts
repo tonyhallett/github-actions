@@ -17,7 +17,7 @@ export async function getWorkflowArtifactDetails(): Promise<
 > {
   return useOctokit(async octokit => {
     const artifactDetails: WorkflowArtifactDetails[] = []
-    let payload = payloadOrInput<'workflow_run'>('workflowPayload')
+    const payload = payloadOrInput<'workflow_run'>('workflowPayload')
     const workflowRun = payload.workflow_run
     const repoHtmlUrl = payload.repository.html_url
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

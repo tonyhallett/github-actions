@@ -1,6 +1,9 @@
 import {getStringInput, payloadOrInput} from '../helpers/inputHelpers'
 import {useOctokit} from '../helpers/useOctokit'
-import {workflowGetPullRequest} from './workflowGetPullRequest'
+import {
+  getPullRequestFromCommitMessage,
+  workflowGetPullRequest
+} from './workflowGetPullRequest'
 
 jest.mock('@actions/github', () => {
   return {
@@ -13,17 +16,7 @@ jest.mock('@actions/github', () => {
   }
 })
 
-const mockPayloadOrInput = {
-  workflow_run: {
-    head_branch: 'headbranch',
-    head_sha: 'headsha',
-    head_repository: {
-      owner: {
-        login: 'ownerlogin'
-      }
-    }
-  }
-}
+let mockPayloadOrInput: any
 let mockPullState = ''
 jest.mock('../helpers/inputHelpers', () => {
   return {
@@ -39,7 +32,11 @@ jest.mock('../helpers/inputHelpers', () => {
     })
   }
 })
-
+const mockGetPullRequestResponse = {
+  data: {
+    pullrequest: 'fields'
+  }
+}
 const mockOctokit = {
   paginate: jest.fn().mockResolvedValue([
     {
@@ -57,7 +54,8 @@ const mockOctokit = {
   pulls: {
     list: {
       endpoint: '....'
-    }
+    },
+    get: jest.fn().mockResolvedValue(mockGetPullRequestResponse)
   }
 }
 jest.mock('../helpers/useOctokit', () => {
@@ -67,58 +65,124 @@ jest.mock('../helpers/useOctokit', () => {
 })
 
 describe('workflowGetPullRequest', () => {
-  beforeEach(() => {
-    mockPullState = 'open'
-  })
-  it('should throw for incorrect pullState input', () => {
-    mockPullState = 'incorrect'
-    return expect(workflowGetPullRequest()).rejects.toThrow(
-      'Incorrect pullState input - allowed all | closed | open'
-    )
-  })
-
-  it('should default the pull state to all', async () => {
-    await workflowGetPullRequest()
-    expect(getStringInput).toHaveBeenCalledWith('pullState', {
-      defaultValue: 'all'
-    })
-  })
-
-  it('should get the payload from payload or workflowPayload input', async () => {
-    await workflowGetPullRequest()
-    expect(payloadOrInput).toHaveBeenCalledWith('workflowPayload')
-  })
-
-  it('should use octokit env var', async () => {
-    await workflowGetPullRequest()
-    expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
-  })
-
-  const pullStates = ['open', 'closed', 'all']
-  pullStates.forEach(pullState => {
-    it('should paginate 100 pulls filtered by branch and state', async () => {
-      mockPullState = pullState
-      await workflowGetPullRequest()
-      expect(mockOctokit.paginate).toHaveBeenCalledWith(
-        mockOctokit.pulls.list,
-        {
-          per_page: 100,
-          repo: 'therepo',
-          owner: 'theowner',
-          head: 'ownerlogin:headbranch',
-          state: pullState
+  describe('pull request workflow', () => {
+    beforeEach(() => {
+      mockPullState = 'open'
+      mockPayloadOrInput = {
+        workflow_run: {
+          head_branch: 'headbranch',
+          head_sha: 'headsha',
+          head_repository: {
+            owner: {
+              login: 'ownerlogin'
+            }
+          },
+          event: 'pull_request'
         }
+      }
+    })
+    it('should throw for incorrect pullState input', () => {
+      mockPullState = 'incorrect'
+      return expect(workflowGetPullRequest()).rejects.toThrow(
+        'Incorrect pullState input - allowed all | closed | open'
       )
     })
-  })
 
-  it('should match the pull requests by SHA', async () => {
-    const pullRequest = await workflowGetPullRequest()
-    expect(pullRequest).toEqual({
-      head: {
-        sha: 'headsha'
-      },
-      matchingPullReques: true
+    it('should default the pull state to all', async () => {
+      await workflowGetPullRequest()
+      expect(getStringInput).toHaveBeenCalledWith('pullState', {
+        defaultValue: 'all'
+      })
     })
+
+    it('should get the payload from payload or workflowPayload input', async () => {
+      await workflowGetPullRequest()
+      expect(payloadOrInput).toHaveBeenCalledWith('workflowPayload')
+    })
+
+    it('should use octokit env var', async () => {
+      await workflowGetPullRequest()
+      expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
+    })
+
+    const pullStates = ['open', 'closed', 'all']
+    pullStates.forEach(pullState => {
+      it('should paginate 100 pulls filtered by branch and state', async () => {
+        mockPullState = pullState
+        await workflowGetPullRequest()
+        expect(mockOctokit.paginate).toHaveBeenCalledWith(
+          mockOctokit.pulls.list,
+          {
+            per_page: 100,
+            repo: 'therepo',
+            owner: 'theowner',
+            head: 'ownerlogin:headbranch',
+            state: pullState
+          }
+        )
+      })
+    })
+
+    it('should match the pull requests by SHA', async () => {
+      const pullRequest = await workflowGetPullRequest()
+      expect(pullRequest).toEqual({
+        head: {
+          sha: 'headsha'
+        },
+        matchingPullReques: true
+      })
+    })
+  })
+  describe('push workflow', () => {
+    describe('getPullRequestFromCommitMessage', () => {
+      it('should extract the pull number from `Merge pull request #123`', () => {
+        expect(getPullRequestFromCommitMessage('Merge pull request #123'))
+      })
+    })
+    function getPayloadOrInput(commitMessage: string) {
+      return {
+        workflow_run: {
+          head_branch: 'headbranch',
+          head_sha: 'headsha',
+          head_repository: {
+            owner: {
+              login: 'ownerlogin'
+            }
+          },
+          head_commit: {
+            message: commitMessage
+          },
+          event: 'push'
+        }
+      }
+    }
+
+    it('should get the pull request from the commit message', async () => {
+      mockPayloadOrInput = getPayloadOrInput('Merge pull request #77')
+      const pullRequest = await workflowGetPullRequest()
+      expect(mockOctokit.pulls.get).toHaveBeenCalledWith({
+        repo: 'therepo',
+        owner: 'theowner',
+        pull_number: 77
+      })
+      expect(pullRequest).toBe(mockGetPullRequestResponse.data)
+    })
+  })
+  it('should throw for any other event', () => {
+    mockPayloadOrInput = {
+      workflow_run: {
+        head_branch: 'headbranch',
+        head_sha: 'headsha',
+        head_repository: {
+          owner: {
+            login: 'ownerlogin'
+          }
+        },
+        event: 'notpullorpush'
+      }
+    }
+    expect(workflowGetPullRequest()).rejects.toThrowError(
+      'unsupported workflow run event'
+    )
   })
 })

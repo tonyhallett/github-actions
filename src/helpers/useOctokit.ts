@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
 import {getOctokit} from '@actions/github'
-
+export type Octokit = ReturnType<typeof getOctokit>
 export async function useOctokit<TResult>(
-  usage: (octokit: ReturnType<typeof getOctokit>) => Promise<TResult>,
+  usage: (octokit: Octokit) => Promise<TResult>,
   inputOrEnvironmentName = 'GITHUB_TOKEN',
   fromEnvironment = true,
   requiredFor?: string

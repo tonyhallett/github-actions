@@ -2,16 +2,12 @@ import * as core from '@actions/core'
 import {context} from '@actions/github'
 import {getWorkflowArtifactsComment} from './getWorkflowArtifactsComment'
 import {useOctokit} from '../../helpers/useOctokit'
-import {
-  pullStateInputName,
-  workflowGetPullRequest
-} from '../workflowGetPullRequest'
+import {workflowGetPullRequest} from '../workflowGetPullRequest'
 import {trySetFailedAsync} from '../../helpers/tryCatchSetFailed'
 import {getBoolInput, setInput} from '../../helpers/inputHelpers'
 import {getPullRequestIssuesActionWorker} from '../../getPullRequestIssues/getPullRequestIssuesActionWorker'
 export async function workflowArtifactsPullRequestCommentAction(): Promise<void> {
   return trySetFailedAsync(async () => {
-    setInput(pullStateInputName, 'open')
     const pullRequest = await workflowGetPullRequest()
     if (pullRequest === undefined) {
       throw new Error('no pull request')
