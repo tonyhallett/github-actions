@@ -1,7 +1,7 @@
 import {PullRequest} from '@octokit/webhooks-definitions/schema'
 import {useOctokit} from '../helpers/useOctokit'
 import * as core from '@actions/core'
-import {setInput} from '../../src/helpers/inputHelpers'
+import {setInput} from '../helpers/inputHelpers'
 import {getPullRequestIssuesActionWorker} from '../getPullRequestIssues/getPullRequestIssuesActionWorker'
 import {context} from '@actions/github'
 export async function addCommentToPullAndIssues(
