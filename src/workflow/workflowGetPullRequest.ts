@@ -23,7 +23,7 @@ export async function workflowGetPullRequest(): Promise<
   return await useOctokit(async octokit => {
     switch (payload.workflow_run.event) {
       case 'push':
-        return getPullRequestForPushWorkflow(
+        return getPullRequestFromCommitMessage(
           octokit,
           payload.workflow_run.head_commit.message
         )
@@ -59,18 +59,20 @@ async function getPullRequestForPullRequestWorkflow(
   ) as never) as PullRequest
 }
 
-async function getPullRequestForPushWorkflow(
+export async function getPullRequestFromCommitMessage(
   octokit: Octokit,
   commitMessage: string
 ): Promise<PullRequest> {
   const response = await octokit.pulls.get({
     ...github.context.repo,
-    pull_number: getPullRequestFromCommitMessage(commitMessage)
+    pull_number: getPullRequestNumberFromCommitMessage(commitMessage)
   })
   return response.data as PullRequest
 }
 
-export function getPullRequestFromCommitMessage(commitMessage: string): number {
+export function getPullRequestNumberFromCommitMessage(
+  commitMessage: string
+): number {
   const matches = /#([0-9]*)/.exec(commitMessage)
   if (matches) {
     return Number(matches[1])
