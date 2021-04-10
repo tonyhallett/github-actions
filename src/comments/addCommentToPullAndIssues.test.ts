@@ -1,8 +1,8 @@
-import {addCommentToPullAndIssues} from './addCommentToPullAndIssues' 
+import {addCommentToPullAndIssues} from './addCommentToPullAndIssues'
 import {setOutput} from '@actions/core'
-import { useOctokit } from '../helpers/useOctokit'
-import { setInput } from '../helpers/inputHelpers'
-import { getPullRequestIssuesActionWorker } from '../getPullRequestIssues/getPullRequestIssuesActionWorker'
+import {useOctokit} from '../helpers/useOctokit'
+import {setInput} from '../helpers/inputHelpers'
+import {getPullRequestIssuesActionWorker} from '../getPullRequestIssues/getPullRequestIssuesActionWorker'
 
 jest.mock('../getPullRequestIssues/getPullRequestIssuesActionWorker', () => {
   return {
@@ -127,16 +127,16 @@ function specificCalledBefore(
 }
 
 describe('hcreates comments in pull request and/or issues based upon addTo input', () => {
-  const pullRequest = {number:123}
+  const pullRequest = {number: 123}
   const comment = 'a comment'
-  async function doAddCommentToPullAndIssues():Promise<void>{
-    await addCommentToPullAndIssues(pullRequest as any,comment)
+  async function doAddCommentToPullAndIssues(): Promise<void> {
+    await addCommentToPullAndIssues(pullRequest as any, comment)
   }
   beforeEach(() => {
     createCommentId = 0
   })
   it('should useOctokit with env variable', async () => {
-    await addCommentToPullAndIssues({} as any,'a comment')
+    await addCommentToPullAndIssues({} as any, 'a comment')
     expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
   })
 

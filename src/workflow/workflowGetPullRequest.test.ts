@@ -139,7 +139,9 @@ describe('workflowGetPullRequest', () => {
         expect(getPullRequestNumberFromCommitMessage('Merge pull request #123'))
       })
       it('should throw error if does not match', () => {
-        expect(() => getPullRequestNumberFromCommitMessage('no match')).toThrowError('commit message does not match')
+        expect(() =>
+          getPullRequestNumberFromCommitMessage('no match')
+        ).toThrowError('commit message does not match')
       })
     })
     function getPayloadOrInput(commitMessage: string) {

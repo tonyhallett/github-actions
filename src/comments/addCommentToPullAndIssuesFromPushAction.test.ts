@@ -1,24 +1,24 @@
-import { useOctokit } from '../helpers/useOctokit'
-import { getPullRequestFromCommitMessage } from '../workflow/workflowGetPullRequest'
+import {useOctokit} from '../helpers/useOctokit'
+import {getPullRequestFromCommitMessage} from '../workflow/workflowGetPullRequest'
 import {addCommentToPullAndIssues} from './addCommentToPullAndIssues'
 import {addCommentToPullAndIssuesFromPushAction} from './addCommentToPullAndIssuesFromPushAction'
 jest.mock('@actions/core', () => {
   return {
-    getInput:(inputName:string) => {
-      if(inputName === 'comment'){
+    getInput: (inputName: string) => {
+      if (inputName === 'comment') {
         return 'the comment'
       }
       throw new Error('unexpected input')
     },
-    setFailed:jest.fn()
+    setFailed: jest.fn()
   }
 })
 jest.mock('@actions/github', () => {
   return {
-    context:{
-      payload:{
-        head_commit:{
-          message:'the commit message'
+    context: {
+      payload: {
+        head_commit: {
+          message: 'the commit message'
         }
       }
     }
@@ -27,17 +27,19 @@ jest.mock('@actions/github', () => {
 jest.mock('./addCommentToPullAndIssues')
 jest.mock('../workflow/workflowGetPullRequest', () => {
   return {
-    getPullRequestFromCommitMessage:jest.fn().mockResolvedValue({a:'pullrequest'})
+    getPullRequestFromCommitMessage: jest
+      .fn()
+      .mockResolvedValue({a: 'pullrequest'})
   }
 })
-const mockOctokit = {mock:'octokit'}
+const mockOctokit = {mock: 'octokit'}
 let mockThrowError = false
 const mockError = new Error('errored')
 
-jest.mock('../helpers/useOctokit',() =>{
+jest.mock('../helpers/useOctokit', () => {
   return {
-    useOctokit:jest.fn(callback => {
-      if(mockThrowError){
+    useOctokit: jest.fn(callback => {
+      if (mockThrowError) {
         throw mockError
       }
       return callback(mockOctokit)
@@ -57,16 +59,19 @@ describe('addCommentToPullAndIssuesFromPushAction', () => {
       expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
     })
     describe('adding comment to pull and issues', () => {
-      let args:[any,string]
+      let args: [any, string]
       beforeEach(async () => {
-        await addCommentToPullAndIssuesFromPushAction();
+        await addCommentToPullAndIssuesFromPushAction()
         args = (addCommentToPullAndIssues as jest.Mock).mock.calls[0]
       })
       it('should get the pull request from the commit message', async () => {
-        expect(getPullRequestFromCommitMessage).toHaveBeenCalledWith(mockOctokit,'the commit message')
-        expect(args[0]).toEqual({a:'pullrequest'})
+        expect(getPullRequestFromCommitMessage).toHaveBeenCalledWith(
+          mockOctokit,
+          'the commit message'
+        )
+        expect(args[0]).toEqual({a: 'pullrequest'})
       })
-    
+
       it('should get the comment from input', async () => {
         expect(args[1]).toEqual('the comment')
       })

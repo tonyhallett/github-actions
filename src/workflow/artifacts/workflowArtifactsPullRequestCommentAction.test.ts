@@ -1,5 +1,5 @@
 import {setFailed} from '@actions/core'
-import { addCommentToPullAndIssues } from '../../comments/addCommentToPullAndIssues'
+import {addCommentToPullAndIssues} from '../../comments/addCommentToPullAndIssues'
 import {getBoolInput} from '../../helpers/inputHelpers'
 import {workflowArtifactsPullRequestCommentAction} from './workflowArtifactsPullRequestCommentAction'
 let mockWorkflowArtifactsComment: string | null
@@ -18,13 +18,13 @@ jest.mock('../../helpers/inputHelpers', () => {
         return mockErrorNoArtifacts
       }
       throw new Error('unexpected input')
-    }),
+    })
   }
 })
 
 jest.mock('@actions/core', () => {
   return {
-    setFailed: jest.fn(),
+    setFailed: jest.fn()
   }
 })
 jest.mock('../workflowGetPullRequest', () => {
@@ -45,7 +45,6 @@ jest.mock('./getWorkflowArtifactsComment', () => {
     })
   }
 })
-
 
 function expectSetFailedError(expectedMessage: string): void {
   const setFailedMock = setFailed as jest.Mock
@@ -100,8 +99,10 @@ describe('workflowArtifactsPullRequestCommentAction', () => {
       mockWorkflowArtifactsComment = 'a comment'
       mockPullRequest = {number: 123}
       await workflowArtifactsPullRequestCommentAction()
-      expect(addCommentToPullAndIssues).toHaveBeenCalledWith(mockPullRequest,'a comment')
+      expect(addCommentToPullAndIssues).toHaveBeenCalledWith(
+        mockPullRequest,
+        'a comment'
+      )
     })
   })
 })
-
