@@ -1,7 +1,7 @@
 import {getStringInput, payloadOrInput} from '../helpers/inputHelpers'
 import {useOctokit} from '../helpers/useOctokit'
 import {
-  getPullRequestFromCommitMessage,
+  getPullRequestNumberFromCommitMessage,
   workflowGetPullRequest
 } from './workflowGetPullRequest'
 
@@ -136,7 +136,10 @@ describe('workflowGetPullRequest', () => {
   describe('push workflow', () => {
     describe('getPullRequestFromCommitMessage', () => {
       it('should extract the pull number from `Merge pull request #123`', () => {
-        expect(getPullRequestFromCommitMessage('Merge pull request #123'))
+        expect(getPullRequestNumberFromCommitMessage('Merge pull request #123'))
+      })
+      it('should throw error if does not match', () => {
+        expect(() => getPullRequestNumberFromCommitMessage('no match')).toThrowError('commit message does not match')
       })
     })
     function getPayloadOrInput(commitMessage: string) {
