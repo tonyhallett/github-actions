@@ -1,9 +1,3 @@
 {
-  "exportall.config.folderListener": [
-    "/src/workflow/artifacts",
-    "/src/workflow",
-    "/src/helpers",
-    "/src/getPullRequestIssues",
-    "/src"
-  ]
+  "exportall.config.folderListener": []
 }
