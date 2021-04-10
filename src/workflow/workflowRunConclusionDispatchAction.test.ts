@@ -9,7 +9,8 @@ jest.mock('@actions/github', () => {
     context: {
       payload: {
         workflow_run: {
-          conclusion: 'theconclusion'
+          conclusion: 'theconclusion',
+          event: 'pull_request'
         },
         workflow: {
           name: 'originalworkflowname'
@@ -20,6 +21,17 @@ jest.mock('@actions/github', () => {
         repo: 'therepo'
       }
     }
+  }
+})
+let mockEventNameInEventType = false
+jest.mock('../helpers/inputHelpers', () => {
+  return {
+    getBoolInput: jest.fn((inputName: string) => {
+      if (inputName === 'eventNameInEventType') {
+        return mockEventNameInEventType
+      }
+      throw new Error('unexpected input')
+    })
   }
 })
 const mockOctokit = {
@@ -42,6 +54,7 @@ jest.mock('../helpers/useOctokit', () => {
 describe('workflowRunConclusionDispatchAction', () => {
   beforeEach(() => {
     mockThrow = false
+    mockEventNameInEventType = false
   })
   it('should setFailed on error', async () => {
     mockThrow = true
@@ -59,30 +72,43 @@ describe('workflowRunConclusionDispatchAction', () => {
   })
 
   describe('should dispatch repository dispatch event', () => {
-    let dispatchEventParameter: RestEndpointMethodTypes['repos']['createDispatchEvent']['parameters']
-    beforeEach(async () => {
-      await workflowRunConclusionDispatchAction()
-      dispatchEventParameter =
-        mockOctokit.repos.createDispatchEvent.mock.calls[0][0]
-      expect(dispatchEventParameter.repo).toBe('therepo')
-      expect(dispatchEventParameter.owner).toBe('theowner')
-    })
-
-    it('should have the event type as workflow name and workflow conclusion', () => {
-      expect(dispatchEventParameter.event_type).toBe(
-        'originalworkflowname - theconclusion'
-      )
-    })
-
-    it('should have the original payload as the client_payload', () => {
-      expect(dispatchEventParameter.client_payload).toEqual({
-        workflow_run: {
-          conclusion: 'theconclusion'
-        },
-        workflow: {
-          name: 'originalworkflowname'
-        }
+    describe('do not include the event type by default', () => {
+      let dispatchEventParameter: RestEndpointMethodTypes['repos']['createDispatchEvent']['parameters']
+      beforeEach(async () => {
+        await workflowRunConclusionDispatchAction()
+        dispatchEventParameter =
+          mockOctokit.repos.createDispatchEvent.mock.calls[0][0]
+        expect(dispatchEventParameter.repo).toBe('therepo')
+        expect(dispatchEventParameter.owner).toBe('theowner')
       })
+
+      it('should have the event type as workflow name and workflow conclusion', () => {
+        expect(dispatchEventParameter.event_type).toBe(
+          'originalworkflowname - theconclusion'
+        )
+      })
+
+      it('should have the original payload as the client_payload', () => {
+        expect(dispatchEventParameter.client_payload).toEqual({
+          workflow_run: {
+            conclusion: 'theconclusion',
+            event: 'pull_request'
+          },
+          workflow: {
+            name: 'originalworkflowname'
+          }
+        })
+      })
+    })
+
+    it('should include the event in the event type if input eventNameInEventType is true', async () => {
+      mockEventNameInEventType = true
+      await workflowRunConclusionDispatchAction()
+      const dispatchEventParameter =
+        mockOctokit.repos.createDispatchEvent.mock.calls[0][0]
+      expect(dispatchEventParameter.event_type).toBe(
+        'originalworkflowname - pull_request - theconclusion'
+      )
     })
   })
 })
