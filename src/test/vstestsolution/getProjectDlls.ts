@@ -3,6 +3,7 @@ import * as path from 'path'
 import {resolve} from 'path'
 import {getStringInput} from '../../helpers'
 import {TestProjectFolder} from './getTestProjectFolders'
+import * as core from '@actions/core'
 
 export function getProjectDlls(projectFolders: TestProjectFolder[]): string[] {
   let projectDlls: string[] = []
@@ -14,6 +15,7 @@ export function getProjectDlls(projectFolders: TestProjectFolder[]): string[] {
     let thisProjectDlls: string[] = []
     switch (configuration) {
       case 'find':
+        core.debug(`finding for ${projectFolder.name}`)
         thisProjectDlls = findDlls(projectFolder)
         break
       case 'debug':
@@ -58,6 +60,7 @@ function getDlls(
   const nonMultiTargetedPath = getDll(projectFolder, configuration)
   const nonMultiTargetedExists = fs.existsSync(nonMultiTargetedPath)
   if (nonMultiTargetedExists) {
+    core.debug(`found non multi-targeted - ${nonMultiTargetedPath}`)
     return [nonMultiTargetedPath]
   }
 
@@ -67,7 +70,9 @@ function getDlls(
     projectFolderPath,
     configuration
   )
+  core.debug(`bin folder path - ${binConfigFolderPath}`)
   if (fs.existsSync(binConfigFolderPath)) {
+    core.debug('checking framework folders')
     const fes = fs.readdirSync(binConfigFolderPath, {withFileTypes: true})
     for (const fe of fes) {
       if (fe.isDirectory()) {
@@ -81,9 +86,13 @@ function getDlls(
         )
         if (fs.existsSync(possibleMultiTargetedDllPath)) {
           dlls.push(possibleMultiTargetedDllPath)
+        } else {
+          core.debug(`could not find ${possibleMultiTargetedDllPath}`)
         }
       }
     }
+  } else {
+    core.debug(`bin folder does not exist`)
   }
   return dlls
 }
