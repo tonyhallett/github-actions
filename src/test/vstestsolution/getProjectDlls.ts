@@ -10,7 +10,7 @@ export function getProjectDlls(projectFolders: TestProjectFolder[]): string[] {
   const configuration = getStringInput('configuration', {
     defaultValue: 'find'
   }).toLowerCase()
-
+  core.debug(`number of test folders - ${projectFolders.length} `)
   for (const projectFolder of projectFolders) {
     let thisProjectDlls: string[] = []
     switch (configuration) {
