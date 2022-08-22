@@ -11,52 +11,27 @@ export function getProjectDlls(projectFolders: TestProjectFolder[]): string[] {
   }).toLowerCase()
 
   for (const projectFolder of projectFolders) {
-    //let projectDll: string | undefined
-    //let releaseDll: string
-    //let debugDll: string
     let thisProjectDlls: string[] = []
     switch (configuration) {
       case 'find':
-        /* releaseDll = getDll(projectFolder, 'Release')
-        if (!fs.existsSync(releaseDll)) {
-          debugDll = getDll(projectFolder, 'Debug')
-          if (fs.existsSync(debugDll)) {
-            projectDll = debugDll
-          }
-        } else {
-          projectDll = releaseDll
-        } */
         thisProjectDlls = findDlls(projectFolder)
         break
       case 'debug':
-        /* debugDll = getDebugDll(projectFolder)
-        if (fs.existsSync(debugDll)) {
-          projectDll = debugDll
-        } */
         thisProjectDlls = getDlls(projectFolder, 'Debug')
         break
       case 'release':
-        /* releaseDll = getReleaseDll(projectFolder)
-        if (fs.existsSync(releaseDll)) {
-          projectDll = releaseDll
-        } */
         thisProjectDlls = getDlls(projectFolder, 'Release')
         break
       default:
         throw new Error('unsupported configuration input')
     }
-    /* if (projectDll === undefined) {
-      throw new Error(
-        `cannot find ${projectFolder.name} with configuration ${configuration}`
-      )
-    } */
+
     if (thisProjectDlls.length === 0) {
       throw new Error(
         `cannot find ${projectFolder.name} with configuration ${configuration}`
       )
     }
     projectDlls = projectDlls.concat(thisProjectDlls)
-    // projectDlls.push(projectDll)
   }
   return projectDlls
 }
