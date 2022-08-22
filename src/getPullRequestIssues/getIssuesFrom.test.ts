@@ -17,12 +17,13 @@ const closeWords = [
 const issueWords = ['issue', 'issues']
 
 describe('getIssueFromHash', () => {
-  closeWords.forEach(cw => {
-    it(`should find singular case sensitive ${cw}`, () => {
+  it.each(closeWords)(
+    `should find singular case sensitive %s`,
+    (cw: string) => {
       const issueNumbers = getIssuesFromHash(`${cw} #1`, closeWords, true)
       expect(issueNumbers).toEqual([1])
-    })
-  })
+    }
+  )
 
   it('should not match when case is different when case sensitive', () => {
     const issueNumbers = getIssuesFromHash(`Fix #1`, ['fix'], true)
@@ -66,10 +67,10 @@ describe('getIssueFromHash', () => {
 })
 
 describe('getIssuesFromBranch', () => {
-  ;[1, 10, 100].forEach(issueNumber => {
-    delimiters.forEach(dl => {
-      closeWords.forEach(cw => {
-        issueWords.forEach(iw => {
+  for (const issueNumber of [1, 10, 100]) {
+    for (const dl of delimiters) {
+      for (const cw of closeWords) {
+        for (const iw of issueWords) {
           const branchName = `${cw}${dl}${iw}${dl}${issueNumber}`
           it(`finds singular ${branchName}`, () => {
             const issues = getIssuesFromBranch(
@@ -82,14 +83,14 @@ describe('getIssuesFromBranch', () => {
             expect(issues.length).toBe(1)
             expect(issues[0]).toBe(issueNumber)
           })
-        })
-      })
-    })
-  })
+        }
+      }
+    }
+  }
 
-  delimiters.forEach(dl => {
-    closeWords.forEach(cw => {
-      issueWords.forEach(iw => {
+  for (const dl of delimiters) {
+    for (const cw of closeWords) {
+      for (const iw of issueWords) {
         const branchName = `${cw}${dl}${iw}${dl}10${dl}20`
         it(`finds singular ${branchName}`, () => {
           const issues = getIssuesFromBranch(
@@ -103,9 +104,9 @@ describe('getIssuesFromBranch', () => {
           expect(issues[0]).toBe(10)
           expect(issues[1]).toBe(20)
         })
-      })
-    })
-  })
+      }
+    }
+  }
 
   it('should return empty if does not match - delimiter', () => {
     const issues = getIssuesFromBranch(

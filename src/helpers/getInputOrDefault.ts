@@ -3,9 +3,11 @@ export type InputOptionsExtended<TDefault> = core.InputOptions & {
   defaultValue?: TDefault
 }
 
+export type Transformer<T> = (input: string) => T
+
 export function getInputOrDefault<T>(
   inputName: string,
-  transformer: (input: string) => T,
+  transformer: Transformer<T>,
   options?: InputOptionsExtended<T>
 ): T {
   let input: string

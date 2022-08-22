@@ -1,3 +1,4 @@
+import {PullRequest} from '@octokit/webhooks-definitions/schema'
 import {useOctokit} from '../helpers/useOctokit'
 import {getPullRequestFromCommitMessage} from '../workflow/workflowGetPullRequest'
 import {addCommentToPullAndIssues} from './addCommentToPullAndIssues'
@@ -59,7 +60,7 @@ describe('addCommentToPullAndIssuesFromPushAction', () => {
       expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
     })
     describe('adding comment to pull and issues', () => {
-      let args: [any, string]
+      let args: [PullRequest, string]
       beforeEach(async () => {
         await addCommentToPullAndIssuesFromPushAction()
         args = (addCommentToPullAndIssues as jest.Mock).mock.calls[0]

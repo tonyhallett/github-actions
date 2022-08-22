@@ -16,7 +16,7 @@ jest.mock('@actions/github', () => {
   }
 })
 
-let mockPayloadOrInput: any
+let mockPayloadOrInput: unknown
 let mockPullState = ''
 jest.mock('../helpers/inputHelpers', () => {
   return {
@@ -81,9 +81,9 @@ describe('workflowGetPullRequest', () => {
         }
       }
     })
-    it('should throw for incorrect pullState input', () => {
+    it('should throw for incorrect pullState input', async () => {
       mockPullState = 'incorrect'
-      return expect(workflowGetPullRequest()).rejects.toThrow(
+      await expect(workflowGetPullRequest).rejects.toThrow(
         'Incorrect pullState input - allowed all | closed | open'
       )
     })
@@ -105,9 +105,9 @@ describe('workflowGetPullRequest', () => {
       expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
     })
 
-    const pullStates = ['open', 'closed', 'all']
-    pullStates.forEach(pullState => {
-      it('should paginate 100 pulls filtered by branch and state', async () => {
+    it.each(['open', 'closed', 'all'])(
+      'should paginate 100 pulls filtered by branch and state %s',
+      async (pullState: string) => {
         mockPullState = pullState
         await workflowGetPullRequest()
         expect(mockOctokit.paginate).toHaveBeenCalledWith(
@@ -120,8 +120,8 @@ describe('workflowGetPullRequest', () => {
             state: pullState
           }
         )
-      })
-    })
+      }
+    )
 
     it('should match the pull requests by SHA', async () => {
       const pullRequest = await workflowGetPullRequest()
@@ -133,6 +133,7 @@ describe('workflowGetPullRequest', () => {
       })
     })
   })
+
   describe('push workflow', () => {
     describe('getPullRequestFromCommitMessage', () => {
       it('should extract the pull number from `Merge pull request #123`', () => {
@@ -144,6 +145,7 @@ describe('workflowGetPullRequest', () => {
         ).toThrowError('commit message does not match')
       })
     })
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     function getPayloadOrInput(commitMessage: string) {
       return {
         workflow_run: {

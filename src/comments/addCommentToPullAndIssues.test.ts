@@ -3,6 +3,7 @@ import {setOutput} from '@actions/core'
 import {useOctokit} from '../helpers/useOctokit'
 import {setInput} from '../helpers/inputHelpers'
 import {getPullRequestIssuesActionWorker} from '../getPullRequestIssues/getPullRequestIssuesActionWorker'
+import {PullRequest} from '@octokit/webhooks-definitions/schema'
 
 jest.mock('../getPullRequestIssues/getPullRequestIssuesActionWorker', () => {
   return {
@@ -86,7 +87,7 @@ describe('specific call order helper', () => {
     })
   })
 })
-function getSpecificMockCallOrder(fn: Function, args: any[]) {
+function getSpecificMockCallOrder(fn: Function, args: unknown[]): number {
   const mock = fn as jest.Mock
   const calls = mock.mock.calls
   const callNumber = calls.findIndex(beforeCall => {
@@ -107,10 +108,10 @@ function getSpecificMockCallOrder(fn: Function, args: any[]) {
 
 function specificCalledBefore(
   before: Function,
-  args: any[],
+  args: unknown[],
   after: Function
 ): boolean {
-  let specificCalledBefore = true
+  let didSpecificCalledBefore = true
 
   const afterMock = after as jest.Mock
   const afterInvocationCallOrder = afterMock.mock.invocationCallOrder
@@ -118,25 +119,28 @@ function specificCalledBefore(
   const beforeCallOrder = getSpecificMockCallOrder(before, args)
   for (const afterCallOrder of afterInvocationCallOrder) {
     if (afterCallOrder <= beforeCallOrder) {
-      specificCalledBefore = false
+      didSpecificCalledBefore = false
       break
     }
   }
 
-  return specificCalledBefore
+  return didSpecificCalledBefore
 }
 
 describe('hcreates comments in pull request and/or issues based upon addTo input', () => {
   const pullRequest = {number: 123}
   const comment = 'a comment'
   async function doAddCommentToPullAndIssues(): Promise<void> {
-    await addCommentToPullAndIssues(pullRequest as any, comment)
+    await addCommentToPullAndIssues(
+      (pullRequest as unknown) as PullRequest,
+      comment
+    )
   }
   beforeEach(() => {
     createCommentId = 0
   })
   it('should useOctokit with env variable', async () => {
-    await addCommentToPullAndIssues({} as any, 'a comment')
+    await addCommentToPullAndIssues(({} as unknown) as PullRequest, 'a comment')
     expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
   })
 
@@ -180,7 +184,7 @@ describe('hcreates comments in pull request and/or issues based upon addTo input
     }
   ]
 
-  tests.forEach(test => {
+  for (const test of tests) {
     const tester = test.only ? fit : it
     tester(`${test.description}`, async () => {
       mockAddTo = test.addTo
@@ -188,25 +192,25 @@ describe('hcreates comments in pull request and/or issues based upon addTo input
       expect(mockOctokit.issues.createComment).toHaveBeenCalledTimes(
         test.expectedIssueNumbers.length
       )
-      test.expectedIssueNumbers.forEach(expectedIssueNumber => {
+      for (const expectedIssueNumber of test.expectedIssueNumbers) {
         expect(mockOctokit.issues.createComment).toHaveBeenCalledWith({
           owner: 'theowner',
           repo: 'therepo',
           issue_number: expectedIssueNumber,
           body: comment
         })
-      })
-      const expectedCommentIds = []
+      }
+      const expectedCommentIds: number[] = []
       for (let c = 0; c < test.expectedIssueNumbers.length; c++) {
         expectedCommentIds.push(c + 1)
       }
       expect(setOutput).toHaveBeenCalledWith('commentIds', expectedCommentIds)
     })
-  })
+  }
 
-  const addToIssuesInputs = ['issues', 'pullandissues']
-  addToIssuesInputs.forEach(addToIssuesInput => {
-    it('should set the pullRequest input to be used by getPullRequestIssuesActionWorker', async () => {
+  it.each(['issues', 'pullandissues'])(
+    'should set the pullRequest input to be used by getPullRequestIssuesActionWorker',
+    async (addToIssuesInput: string) => {
       mockAddTo = addToIssuesInput
       await doAddCommentToPullAndIssues()
       expect(
@@ -216,6 +220,6 @@ describe('hcreates comments in pull request and/or issues based upon addTo input
           getPullRequestIssuesActionWorker
         )
       ).toBe(true)
-    })
-  })
+    }
+  )
 })

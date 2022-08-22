@@ -1,8 +1,8 @@
 import {getUniqueIssues, IIssuesProvider} from './getUniqueIssues'
 describe('getUniqueIssues', () => {
-  const booleanValues = [true, false]
-  booleanValues.forEach(booleanValue => {
-    it('should have unique issues from the issue providers that can provide', async () => {
+  it.each([true, false])(
+    'should have unique issues from the issue providers that can provide - case sensitive %s',
+    async (caseSensitive: boolean) => {
       const alwaysProvide: IIssuesProvider = {
         canProvide: () => true,
         getIssues: jest.fn().mockResolvedValue([1, 2]),
@@ -10,7 +10,7 @@ describe('getUniqueIssues', () => {
         name: ''
       }
       const dependentProvider: IIssuesProvider = {
-        canProvide: () => booleanValue,
+        canProvide: () => caseSensitive,
         getIssues: jest.fn().mockResolvedValue([1, 3]),
         cannotProvideMessage: '',
         name: ''
@@ -21,20 +21,20 @@ describe('getUniqueIssues', () => {
       const issues = await getUniqueIssues(
         pullRequest,
         ['closeword'],
-        booleanValue,
+        caseSensitive,
         providers
       )
-      const expectedIssues = booleanValue ? [1, 2, 3] : [1, 2]
+      const expectedIssues = caseSensitive ? [1, 2, 3] : [1, 2]
       expect(issues).toEqual(expectedIssues)
-      providers.forEach(provider => {
+      for (const provider of providers) {
         if (provider.canProvide()) {
           expect(provider.getIssues).toHaveBeenCalledWith(
             pullRequest,
             ['closeword'],
-            booleanValue
+            caseSensitive
           )
         }
-      })
-    })
-  })
+      }
+    }
+  )
 })

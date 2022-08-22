@@ -34,9 +34,8 @@ describe('getProjectFolders', () => {
   })
   it('should include the projects that match the name', async () => {
     const testProjectFolders = await getTestProjectFolders('a.sln')
-    ;['project1', 'project2'].forEach(projectName => {
-      expect(testProjectNameMatch).toHaveBeenCalledWith(projectName)
-    })
+    expect(testProjectNameMatch).toHaveBeenCalledWith('project1')
+    expect(testProjectNameMatch).toHaveBeenCalledWith('project2')
     expect(testProjectFolders.length).toBe(1)
   })
 

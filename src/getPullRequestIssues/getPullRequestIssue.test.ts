@@ -20,7 +20,7 @@ jest.mock('./getIssuesFrom', () => {
     getIssuesFromHash: jest.fn().mockReturnValue([3, 4])
   }
 })
-let mockOctokit = {
+const mockOctokit = {
   paginate: jest.fn().mockReturnValue([
     {
       commit: {
@@ -81,8 +81,9 @@ describe('getPullRequestIssues', () => {
       expect.anything()
     )
   })
-  booleanValues.forEach(caseSensitive => {
-    it('should get unique issues based on caseSensitive', async () => {
+  it.each([true, false])(
+    'should get unique issues based on caseSensitive - %s',
+    async (caseSensitive: boolean) => {
       await getPullRequestIssues(
         {} as any,
         [],
@@ -100,8 +101,8 @@ describe('getPullRequestIssues', () => {
         caseSensitive,
         expect.anything()
       )
-    })
-  })
+    }
+  )
 
   it('should return the unique issues', async () => {
     const issues = await getPullRequestIssues(
@@ -168,91 +169,112 @@ describe('getPullRequestIssues', () => {
     return issueProviders.find(ip => ip.name === providerName)!
   }
 
-  booleanValues.forEach(booleanValue => {
-    it('should use pullTitle dependent upon usePullTitle', async () => {
+  it.each(booleanValues)(
+    'should use pullTitle dependent upon usePullTitle - %s',
+    async (usePullTitle: boolean) => {
       return canProvideTest(
-        booleanValue,
+        usePullTitle,
         false,
         false,
         false,
         pullTitleProviderName,
-        booleanValue
+        usePullTitle
       )
-    })
-    it('should use pullBody dependent upon usePullBody', async () => {
+    }
+  )
+
+  it.each(booleanValues)(
+    'should use pullBody dependent upon usePullBody - %s',
+    async (usePullBody: boolean) => {
       return canProvideTest(
         false,
-        booleanValue,
+        usePullBody,
         false,
         false,
         pullBodyProviderName,
-        booleanValue
+        usePullBody
       )
-    })
-    it('should useBranch dependent upon useBranch', async () => {
+    }
+  )
+
+  it.each(booleanValues)(
+    'should useBranch dependent upon useBranch - %s',
+    async (useBranch: boolean) => {
       return canProvideTest(
         false,
         false,
-        booleanValue,
+        useBranch,
         false,
         branchProviderName,
-        booleanValue
+        useBranch
       )
-    })
+    }
+  )
 
-    it('should use commit message dependent upon useCommitMessages', async () => {
+  it.each(booleanValues)(
+    'should use commit message dependent upon useCommitMessages - %s',
+    async (useCommitMessages: boolean) => {
       return canProvideTest(
         false,
         false,
         false,
-        booleanValue,
+        useCommitMessages,
         commitMessagesProviderName,
-        booleanValue
+        useCommitMessages
       )
-    })
+    }
+  )
 
-    it('should getIssuesFromHash for pull title', async () => {
+  it.each(booleanValues)(
+    'should getIssuesFromHash for pull title',
+    async (caseSensitive: boolean) => {
       const pullTitleProvider = await getPullRequestIssueProvider(
         pullTitleProviderName
       )
       const issues = await pullTitleProvider.getIssues(
         {title: 'the title'} as any,
         ['thecloseword'],
-        booleanValue
+        caseSensitive
       )
       expect(issues).toEqual([3, 4])
       expect(getIssuesFromHash).toHaveBeenCalledWith(
         'the title',
         ['thecloseword'],
-        booleanValue
+        caseSensitive
       )
-    })
+    }
+  )
 
-    it('should getIssuesFromHash for pull body', async () => {
+  it.each(booleanValues)(
+    'should getIssuesFromHash for pull body',
+    async (caseSensitive: boolean) => {
       const pullBodyProvider = await getPullRequestIssueProvider(
         pullBodyProviderName
       )
       const issues = await pullBodyProvider.getIssues(
         {body: 'the body'} as any,
         ['thecloseword'],
-        booleanValue
+        caseSensitive
       )
       expect(issues).toEqual([3, 4])
       expect(getIssuesFromHash).toHaveBeenCalledWith(
         'the body',
         ['thecloseword'],
-        booleanValue
+        caseSensitive
       )
-    })
+    }
+  )
 
-    it('should getIssuesFromBranch for branch', async () => {
+  it.each(booleanValues)(
+    'should getIssuesFromBranch for branch',
+    async (caseSensitive: boolean) => {
       const branchProvider = await getPullRequestIssueProvider(
         branchProviderName
       )
       const issues = await branchProvider.getIssues(
         {head: {ref: 'the branch'}} as any,
         ['thecloseword'],
-        booleanValue
+        caseSensitive
       )
       expect(issues).toEqual([1, 2])
       expect(getIssuesFromBranch).toHaveBeenCalledWith(
@@ -260,43 +282,43 @@ describe('getPullRequestIssues', () => {
         ['thecloseword'],
         branchIssueWords,
         branchDelimiters,
-        booleanValue
+        caseSensitive
+      )
+    }
+  )
+
+  describe.each(booleanValues)('commit messages', (caseSensitive: boolean) => {
+    let issues: number[]
+    beforeEach(async () => {
+      const commitMessagesProvider = await getPullRequestIssueProvider(
+        commitMessagesProviderName
+      )
+      issues = await commitMessagesProvider.getIssues(
+        {commits: 2, commits_url: 'commits url'} as any,
+        ['thecloseword'],
+        caseSensitive
       )
     })
-
-    describe('commit messages', () => {
-      let issues: number[]
-      beforeEach(async () => {
-        const commitMessagesProvider = await getPullRequestIssueProvider(
-          commitMessagesProviderName
-        )
-        issues = await commitMessagesProvider.getIssues(
-          {commits: 2, commits_url: 'commits url'} as any,
-          ['thecloseword'],
-          booleanValue
-        )
+    it('should useOctokit', async () => {
+      expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
+    })
+    it('should paginate the commits url with 100 per page', async () => {
+      expect(mockOctokit.paginate).toHaveBeenCalledWith('commits url', {
+        per_page: 100
       })
-      it('should useOctokit', async () => {
-        expect(useOctokit).toHaveBeenCalledWith(expect.any(Function))
-      })
-      it('should paginate the commits url with 100 per page', async () => {
-        expect(mockOctokit.paginate).toHaveBeenCalledWith('commits url', {
-          per_page: 100
-        })
-      })
-      it('should getIssuesFromHash for each commit message', async () => {
-        expect(getIssuesFromHash).toHaveBeenCalledWith(
-          'commit 1',
-          ['thecloseword'],
-          booleanValue
-        )
-        expect(getIssuesFromHash).toHaveBeenCalledWith(
-          'commit 2',
-          ['thecloseword'],
-          booleanValue
-        )
-        expect(issues).toEqual([3, 4, 3, 4])
-      })
+    })
+    it('should getIssuesFromHash for each commit message', async () => {
+      expect(getIssuesFromHash).toHaveBeenCalledWith(
+        'commit 1',
+        ['thecloseword'],
+        caseSensitive
+      )
+      expect(getIssuesFromHash).toHaveBeenCalledWith(
+        'commit 2',
+        ['thecloseword'],
+        caseSensitive
+      )
+      expect(issues).toEqual([3, 4, 3, 4])
     })
   })
 })

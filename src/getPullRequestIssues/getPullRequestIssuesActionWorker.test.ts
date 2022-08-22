@@ -78,9 +78,9 @@ describe('getPullRequestIssuesAction', () => {
     expect(payloadOrInput).toHaveBeenCalledWith('pullRequest')
   })
 
-  const booleanInputs = [true, false]
-  booleanInputs.forEach(boolInput => {
-    it('should use input and the payload or input pull_request for getting issues', async () => {
+  it.each([true, false])(
+    'should use input and the payload or input pull_request for getting issues',
+    async (boolInput: boolean) => {
       mockCaseSensitive = boolInput
       mockUsePullTitle = boolInput
       mockUsePullBody = boolInput
@@ -98,8 +98,8 @@ describe('getPullRequestIssuesAction', () => {
         boolInput,
         boolInput
       )
-    })
-  })
+    }
+  )
 
   it('should return issues from getPullRequestIssues', async () => {
     const issues = await getPullRequestIssuesActionWorker()

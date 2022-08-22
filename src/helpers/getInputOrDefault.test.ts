@@ -24,7 +24,7 @@ describe('getInputOrDefault', () => {
     const input = 'the input'
     process.env['INPUT_HASINPUT'] = input
     expect(
-      getInputOrDefault('hasInput', input => `${input}TRANSFORMED`, {
+      getInputOrDefault('hasInput', inp => `${inp}TRANSFORMED`, {
         defaultValue: 'default',
         required: true
       })
@@ -41,7 +41,7 @@ describe('getInputOrDefault', () => {
     const input = 'the input'
     process.env['INPUT_HASINPUT'] = input
     expect(
-      getInputOrDefault('hasInput', input => `${input}TRANSFORMED`, {
+      getInputOrDefault('hasInput', inp => `${inp}TRANSFORMED`, {
         required: true
       })
     ).toBe('the inputTRANSFORMED')
@@ -50,7 +50,7 @@ describe('getInputOrDefault', () => {
   it('should work with no options', () => {
     const input = 'the input'
     process.env['INPUT_HASINPUT'] = input
-    expect(getInputOrDefault('hasInput', input => `${input}TRANSFORMED`)).toBe(
+    expect(getInputOrDefault('hasInput', inp => `${inp}TRANSFORMED`)).toBe(
       'the inputTRANSFORMED'
     )
   })

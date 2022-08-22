@@ -19,11 +19,8 @@ describe('testProjectNameMatch', () => {
       expectedMatch: false
     }
   ]
-
-  defaultTests.forEach(test => {
-    it('should default to regex match test ', () => {
-      expect(testProjectNameMatch(test.projectName)).toBe(test.expectedMatch)
-    })
+  it.each(defaultTests)('should default to regex match test %o', test => {
+    expect(testProjectNameMatch(test.projectName)).toBe(test.expectedMatch)
   })
 
   interface InputProjectNameMatchTest {
@@ -49,10 +46,11 @@ describe('testProjectNameMatch', () => {
     }
   ]
 
-  inputTests.forEach(test => {
-    it('should use testNameRegex input', () => {
+  it.each(inputTests)(
+    'should use testNameRegex input %o',
+    (test: InputProjectNameMatchTest) => {
       setInput('testNameRegex', test.input)
       expect(testProjectNameMatch(test.projectName)).toBe(test.expectedMatch)
-    })
-  })
+    }
+  )
 })

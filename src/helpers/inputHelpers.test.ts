@@ -1,5 +1,5 @@
 import {getInput} from '@actions/core'
-import {getInputOrDefault} from './getInputOrDefault'
+import {getInputOrDefault, Transformer} from './getInputOrDefault'
 import {
   setInput,
   getBoolInput,
@@ -34,12 +34,12 @@ jest.mock('@actions/github', () => {
   }
 })
 
-function expectTransformer(input: string, expected: unknown): void {
-  const transformer: (
-    input: string
-  ) => boolean = (getInputOrDefault as jest.Mock).mock.calls[0][1]
+function expectTransformer<T>(input: string, expected: T): void {
+  const transformer: Transformer<T> = (getInputOrDefault as jest.Mock).mock
+    .calls[0][1]
   expect(transformer(input)).toEqual(expected)
 }
+
 describe('getBoolInput', () => {
   it('should use getInputOrDefault', () => {
     const options = {required: true}
@@ -52,7 +52,7 @@ describe('getBoolInput', () => {
   })
   function expectTransformerBool(input: string, expected: boolean): void {
     getBoolInput('inputName')
-    expectTransformer(input, expected)
+    expectTransformer<boolean>(input, expected)
   }
   it("should return true when input is 'true' ", () => {
     expectTransformerBool('true', true)
@@ -83,7 +83,7 @@ describe('getNumberInput', () => {
   })
   function expectTransformerNumber(input: string, expected: number): void {
     getNumberInput('inputName')
-    expectTransformer(input, expected)
+    expectTransformer<number>(input, expected)
   }
   it("should return 1 when input is '1' ", () => {
     expectTransformerNumber('1', 1)
@@ -107,7 +107,7 @@ describe('getCommaDelimitedStringArrayInput', () => {
 
   function expectTransformerArray(input: string, expected: string[]): void {
     getCommaDelimitedStringArrayInput('inputName')
-    expectTransformer(input, expected)
+    expectTransformer<string[]>(input, expected)
   }
 
   it('should return empty array when no input no default and not required', () => {
@@ -120,14 +120,14 @@ describe('getCommaDelimitedStringArrayInput', () => {
 })
 
 describe('getInputWithNewLine', () => {
-  const isPrefixValues = [true, false]
-  isPrefixValues.forEach(isPrefix => {
-    it('should get the input from core', () => {
+  it.each([true, false])(
+    'should get the input from core - isPrefix %s',
+    (isPrefix: boolean) => {
       const options = {required: true}
       getInputWithNewLine('name', isPrefix, options)
       expect(getInput).toHaveBeenCalledWith('name', options)
-    })
-  })
+    }
+  )
 
   it('should return empty string if no input', () => {
     mockGetInput = ''
@@ -176,12 +176,13 @@ describe('set input', () => {
       expectedInputName: 'INPUT_SOME_INPUT'
     }
   ]
-  setInputTests.forEach(test => {
+
+  for (const test of setInputTests) {
     it(`${test.description}`, () => {
       setInput(test.name, 'value')
       expect(process.env[test.expectedInputName]).toEqual('value')
     })
-  })
+  }
 
   it('works with getInput', () => {
     setInput('theInput', 'value')

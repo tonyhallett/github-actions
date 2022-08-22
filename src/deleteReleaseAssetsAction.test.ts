@@ -82,12 +82,12 @@ describe('deleteReleaseAssetsAction', () => {
   it('should delete all assets from release_id input', async () => {
     await deleteReleaseAssetsAction()
     const expectedAssetDeletions = [1, 2]
-    expectedAssetDeletions.forEach(assetDeletion => {
+    for (const expectedAssetDeletion of expectedAssetDeletions) {
       expect(mockOctokit.repos.deleteReleaseAsset).toHaveBeenCalledWith({
         owner: 'theowner',
         repo: 'therepo',
-        asset_id: assetDeletion
+        asset_id: expectedAssetDeletion
       })
-    })
+    }
   })
 })

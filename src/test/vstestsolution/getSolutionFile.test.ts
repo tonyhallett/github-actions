@@ -31,13 +31,14 @@ describe('getSolutionFile', () => {
     process.env.GITHUB_WORKSPACE = 'WORKSPACE'
   })
   describe('input', () => {
-    ;['asoln.sln', 'asoln'].forEach(soln => {
-      it('should make relative to the workspace directory if does not exist', () => {
+    it.each(['asoln.sln', 'asoln'])(
+      'should make relative to the workspace directory if does not exist - %s',
+      (soln: string) => {
         mockSolutionInput = soln
         const solnFile = getSolutionFile()
         expect(solnFile).toBe('WORKSPACE/asoln.sln')
-      })
-    })
+      }
+    )
 
     it('should return the soln file if it exists', () => {
       mockSolutionInput = 'a.sln'
