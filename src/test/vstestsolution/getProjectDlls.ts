@@ -46,13 +46,6 @@ function findDlls(projectFolder: TestProjectFolder): string[] {
   return dlls
 }
 
-/* function getReleaseDll(projectFolder: TestProjectFolder): string {
-  return getDll(projectFolder, 'Release')
-}
-function getDebugDll(projectFolder: TestProjectFolder): string {
-  return getDll(projectFolder, 'Debug')
-} */
-
 function getDlls(
   projectFolder: TestProjectFolder,
   configuration: 'Debug' | 'Release'
